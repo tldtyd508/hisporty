@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { createClient } from '../utils/supabase/client';
+import { createClient, getURL } from '../utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { LogOut, User as UserIcon, Settings, X, Check } from 'lucide-react';
 
@@ -46,7 +46,7 @@ export default function AuthButton() {
         await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${window.location.origin}/auth/callback`,
+                redirectTo: `${getURL()}auth/callback`,
             },
         });
     };
