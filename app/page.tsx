@@ -5,6 +5,7 @@ import Calendar from './components/Calendar';
 import ReviewFeed from './components/ReviewFeed';
 import ReviewModal from './components/ReviewModal';
 import AuthButton from './components/AuthButton';
+import Dashboard from './components/Dashboard';
 import { PenSquare, Trophy } from 'lucide-react';
 
 export default function Home() {
@@ -29,8 +30,13 @@ export default function Home() {
           <AuthButton />
         </header>
 
-        {/* Calendar Section */}
+        {/* Dashboard Section */}
         <section className="px-4 animate-fade-in-up">
+          <Dashboard />
+        </section>
+
+        {/* Calendar Section */}
+        <section className="px-4 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
           <Calendar
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
