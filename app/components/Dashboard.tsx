@@ -121,7 +121,7 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                         <div className="inline-flex items-center px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black">
-                            승요 지수 85%
+                            {reviewCount > 0 ? '전적 분석 중' : '데이터 부족'}
                         </div>
                     </div>
                 </div>
@@ -142,7 +142,7 @@ export default function Dashboard() {
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 font-bold uppercase">통산 전적</p>
-                            <p className="text-xl font-black text-gray-900">12승 4패</p>
+                            <p className="text-sm font-black text-gray-400">데이터 수집 중</p>
                         </div>
                     </div>
                 </div>
