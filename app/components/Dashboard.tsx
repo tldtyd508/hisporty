@@ -45,6 +45,18 @@ export default function Dashboard() {
         return () => subscription.unsubscribe();
     }, [supabase]);
 
+    const handleStartLogin = async () => {
+        // Sign out first to clear the guest session
+        await supabase.auth.signOut();
+        // Trigger Google Login
+        await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+            },
+        });
+    };
+
     if (loading) {
         return (
             <div className="w-full max-w-md mx-auto mb-6 p-6 bg-white rounded-[2rem] border border-gray-100 shadow-sm animate-pulse">
@@ -81,7 +93,10 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    <button className="w-full py-3 bg-white text-indigo-600 rounded-xl font-bold text-sm flex items-center justify-center transition-colors hover:bg-indigo-50">
+                    <button
+                        onClick={handleStartLogin}
+                        className="w-full py-3 bg-white text-indigo-600 rounded-xl font-bold text-sm flex items-center justify-center transition-colors hover:bg-indigo-50"
+                    >
                         지금 바로 시작하기 <ArrowRight className="w-4 h-4 ml-1" />
                     </button>
                 </div>
