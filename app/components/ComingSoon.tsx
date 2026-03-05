@@ -1,8 +1,10 @@
 "use client";
 
-import { Rocket, Camera, BarChart3, Trophy, Share2, MessageSquare } from 'lucide-react';
+import { Rocket, Camera, BarChart3, Trophy, Share2, MessageSquare, Repeat, Heart } from 'lucide-react';
 
 const COMING_SOON_ITEMS = [
+    { icon: Repeat, label: '종목 전환', color: 'text-indigo-500 bg-indigo-50' },
+    { icon: Heart, label: '응원팀 설정', color: 'text-red-500 bg-red-50' },
     { icon: Camera, label: '직관 사진 업로드', color: 'text-pink-500 bg-pink-50' },
     { icon: BarChart3, label: '구장별 승률 통계', color: 'text-emerald-500 bg-emerald-50' },
     { icon: Trophy, label: '유저 랭킹', color: 'text-amber-500 bg-amber-50' },
