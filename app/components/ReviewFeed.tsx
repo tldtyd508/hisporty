@@ -139,9 +139,16 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                             </div>
                                             <div>
                                                 <p className="text-sm font-bold text-gray-800 tracking-tight">{review.user_nickname}</p>
-                                                <div className="flex items-center mt-0.5">
-                                                    <Star className="w-3.5 h-3.5 text-yellow-500 fill-current mr-1" />
-                                                    <span className="text-sm font-bold text-gray-700">{review.rating}</span>
+                                                <div className="flex items-center mt-0.5 space-x-2">
+                                                    <div className="flex items-center">
+                                                        <Star className="w-3.5 h-3.5 text-yellow-500 fill-current mr-1" />
+                                                        <span className="text-sm font-bold text-gray-700">{review.rating}</span>
+                                                    </div>
+                                                    {review.supporting_team && (
+                                                        <span className="text-[10px] font-black bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-md border border-indigo-100/50">
+                                                            {TEAM_FLAGS[review.supporting_team] || ''} {review.supporting_team} 응원
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

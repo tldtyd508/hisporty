@@ -28,6 +28,7 @@ export default function ReviewModal({
     const [comment, setComment] = useState("");
     const [location, setLocation] = useState("");
     const [companion, setCompanion] = useState("");
+    const [supportingTeam, setSupportingTeam] = useState("");
 
     const [game, setGame] = useState<any>(null);
     const [loading, setLoading] = useState(false);
@@ -66,6 +67,7 @@ export default function ReviewModal({
             user_id: user.id,
             user_nickname: nickname,
             game_id: game?.id,
+            supporting_team: supportingTeam,
             rating,
             comment,
             location,
@@ -82,6 +84,7 @@ export default function ReviewModal({
             setComment("");
             setLocation("");
             setCompanion("");
+            setSupportingTeam("");
             onClose();
         }
     };
@@ -109,23 +112,37 @@ export default function ReviewModal({
 
                             {/* Game Info Card */}
                             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100/50">
-                                <span className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded-full shadow-sm mb-2 inline-block">
+                                <span className="text-xs font-bold text-blue-600 bg-white px-2 py-1 rounded-full shadow-sm mb-4 inline-block">
                                     {format(selectedDate, 'yyyy년 M월 d일')}
                                 </span>
-                                <div className="flex justify-between items-center mt-2">
-                                    <div className="flex flex-col items-center w-5/12">
-                                        <span className="text-5xl mb-2 drop-shadow-sm">{TEAM_FLAGS[game.home_team] || '⚾️'}</span>
-                                        <span className="text-sm font-bold text-gray-900">{game.home_team}</span>
+
+                                <p className="text-[10px] font-bold text-gray-400 uppercase mb-3 ml-1">응원하는 팀 선택</p>
+                                <div className="flex justify-between items-stretch gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSupportingTeam(game.home_team)}
+                                        className={`flex-1 flex flex-col items-center p-3 rounded-2xl border transition-all ${supportingTeam === game.home_team ? 'bg-white border-blue-500 shadow-md scale-[1.02]' : 'bg-white/50 border-transparent hover:bg-white'}`}
+                                    >
+                                        <span className="text-4xl mb-2">{TEAM_FLAGS[game.home_team] || '⚾️'}</span>
+                                        <span className={`text-xs font-bold ${supportingTeam === game.home_team ? 'text-blue-600' : 'text-gray-500'}`}>{game.home_team}</span>
+                                    </button>
+
+                                    <div className="flex flex-col items-center justify-center px-1">
+                                        <span className="text-[10px] font-black text-gray-300 italic">VS</span>
                                     </div>
-                                    <div className="flex flex-col items-center px-4 w-2/12">
-                                        <span className="text-[10px] text-blue-600 font-bold mb-1 whitespace-nowrap">{game.time_kst || '시간 미정'}</span>
-                                        <span className="text-sm font-bold bg-gray-800 text-white px-3 py-1 rounded-full">vs</span>
-                                        <span className="text-[10px] text-gray-400 mt-1 whitespace-nowrap">{game.stadium}</span>
-                                    </div>
-                                    <div className="flex flex-col items-center w-5/12">
-                                        <span className="text-5xl mb-2 drop-shadow-sm">{TEAM_FLAGS[game.away_team] || '⚾️'}</span>
-                                        <span className="text-sm font-bold text-gray-900">{game.away_team}</span>
-                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setSupportingTeam(game.away_team)}
+                                        className={`flex-1 flex flex-col items-center p-3 rounded-2xl border transition-all ${supportingTeam === game.away_team ? 'bg-white border-blue-500 shadow-md scale-[1.02]' : 'bg-white/50 border-transparent hover:bg-white'}`}
+                                    >
+                                        <span className="text-4xl mb-2">{TEAM_FLAGS[game.away_team] || '⚾️'}</span>
+                                        <span className={`text-xs font-bold ${supportingTeam === game.away_team ? 'text-blue-600' : 'text-gray-500'}`}>{game.away_team}</span>
+                                    </button>
+                                </div>
+                                <div className="mt-4 pt-3 border-t border-blue-100/30 flex justify-center space-x-4">
+                                    <span className="text-[10px] text-blue-600 font-bold">{game.time_kst || '시간 미정'}</span>
+                                    <span className="text-[10px] text-gray-400 font-medium">{game.stadium}</span>
                                 </div>
                             </div>
 
@@ -161,13 +178,13 @@ export default function ReviewModal({
                                     <label className="block text-sm font-bold text-gray-700 flex items-center">
                                         <MapPin className="w-4 h-4 mr-1 text-gray-400" /> 관람 장소
                                     </label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {['직관(홈)', '직관(원정)', '집관', '펍/식당'].map(loc => (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {['직관', '집관', '펍/식당'].map(loc => (
                                             <button
                                                 key={loc}
                                                 type="button"
                                                 onClick={() => setLocation(loc)}
-                                                className={`py-2 text-sm font-bold rounded-xl border transition-colors ${location === loc ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                                                className={`py-2 text-sm font-bold rounded-xl border transition-all ${location === loc ? 'bg-gray-800 text-white border-gray-800 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
                                             >
                                                 {loc}
                                             </button>
@@ -208,9 +225,9 @@ export default function ReviewModal({
                             <div className="pt-4 pb-8 sm:pb-0">
                                 <button
                                     type="submit"
-                                    disabled={rating === 0 || !location || !comment.trim()}
+                                    disabled={rating === 0 || !location || !comment.trim() || !supportingTeam}
                                     className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all
-                    ${rating === 0 || !location || !comment.trim()
+                    ${rating === 0 || !location || !comment.trim() || !supportingTeam
                                             ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                                             : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-blue-500/25'
                                         }`}
