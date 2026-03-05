@@ -6,6 +6,7 @@ import ReviewFeed from './components/ReviewFeed';
 import ReviewModal from './components/ReviewModal';
 import AuthButton from './components/AuthButton';
 import Dashboard from './components/Dashboard';
+import ComingSoon from './components/ComingSoon';
 import { PenSquare, Trophy, Eye, EyeOff } from 'lucide-react';
 
 export default function Home() {
@@ -59,8 +60,13 @@ export default function Home() {
           <Dashboard />
         </section>
 
+        {/* Coming Soon */}
+        <section className="animate-fade-in-up" style={{ animationDelay: '30ms' }}>
+          <ComingSoon />
+        </section>
+
         {/* Calendar Section */}
-        <section className="px-4 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+        <section className="px-4 animate-fade-in-up" style={{ animationDelay: '60ms' }}>
           <Calendar
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
