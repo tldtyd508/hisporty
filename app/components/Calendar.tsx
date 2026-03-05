@@ -3,10 +3,23 @@
 import { useState } from 'react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { MOCK_GAMES } from '@/app/data/mockData';
+import { createClient } from '@/app/utils/supabase/client';
+import { useEffect } from 'react';
 
 export default function Calendar({ onSelectDate, selectedDate }: { onSelectDate: (date: Date) => void, selectedDate: Date }) {
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [games, setGames] = useState<any[]>([]);
+    const supabase = createClient();
+
+    useEffect(() => {
+        const fetchGames = async () => {
+            const { data } = await supabase
+                .from('games')
+                .select('id, date');
+            if (data) setGames(data);
+        };
+        fetchGames();
+    }, [supabase]);
 
     const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -59,7 +72,7 @@ export default function Calendar({ onSelectDate, selectedDate }: { onSelectDate:
 
                 // Check if there's a game on this day
                 const dayString = format(day, 'yyyy-MM-dd');
-                const hasGame = MOCK_GAMES.some(g => g.date === dayString);
+                const hasGame = games.some(g => g.date === dayString);
 
                 days.push(
                     <div

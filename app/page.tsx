@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Calendar from './components/Calendar';
 import ReviewFeed from './components/ReviewFeed';
 import ReviewModal from './components/ReviewModal';
+import AuthButton from './components/AuthButton';
 import { PenSquare, Trophy } from 'lucide-react';
 
 export default function Home() {
@@ -25,9 +26,7 @@ export default function Home() {
             <p className="text-xs font-medium text-gray-500 mt-1 ml-8 tracking-wide">나만의 스포츠 연대기</p>
           </div>
 
-          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-600 cursor-pointer hover:bg-gray-200 transition-colors">
-            JG
-          </div>
+          <AuthButton />
         </header>
 
         {/* Calendar Section */}

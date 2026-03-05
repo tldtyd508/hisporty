@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { X, Star, MapPin, Users } from 'lucide-react';
 import { format } from 'date-fns';
-import { MOCK_GAMES } from '../data/mockData';
+import { createClient } from '@/app/utils/supabase/client';
+import { useEffect } from 'react';
 
 export default function ReviewModal({
     isOpen,
@@ -19,17 +20,61 @@ export default function ReviewModal({
     const [location, setLocation] = useState("");
     const [companion, setCompanion] = useState("");
 
+    const [game, setGame] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState<any>(null);
+    const supabase = createClient();
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const init = async () => {
+            setLoading(true);
+            const dateString = format(selectedDate, 'yyyy-MM-dd');
+            const { data } = await supabase.from('games').select('*').eq('date', dateString).limit(1).single();
+            setGame(data || null);
+            setLoading(false);
+
+            const { data: userData } = await supabase.auth.getUser();
+            setUser(userData.user);
+        };
+        init();
+    }, [isOpen, selectedDate, supabase]);
+
     if (!isOpen) return null;
 
-    const dateString = format(selectedDate, 'yyyy-MM-dd');
-    const gamesToday = MOCK_GAMES.filter(g => g.date === dateString);
-    const game = gamesToday[0]; // For MVP, assume 1 game per day for simplicity if it exists
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // In a real app, this would save to DB. For prototype, we just close.
-        alert("리뷰가 등록되었습니다! (Prototype)");
-        onClose();
+
+        if (!user) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+
+        const nickname = user.user_metadata?.name || '익명 사용자';
+
+        const { error } = await supabase.from('reviews').insert({
+            user_id: user.id,
+            user_nickname: nickname,
+            game_id: game?.id,
+            rating,
+            comment,
+            location,
+            companion
+        });
+
+        if (error) {
+            console.error(error);
+            alert("리뷰 저장에 실패했습니다.");
+        } else {
+            alert("리뷰가 등록되었습니다!");
+            // Reset form
+            setRating(0);
+            setComment("");
+            setLocation("");
+            setCompanion("");
+            onClose();
+        }
     };
 
     return (
@@ -59,12 +104,12 @@ export default function ReviewModal({
                                     {format(selectedDate, 'yyyy년 M월 d일')}
                                 </span>
                                 <div className="flex justify-between items-center mt-2">
-                                    <span className="text-lg font-black text-gray-800">{game.homeTeam}</span>
+                                    <span className="text-lg font-black text-gray-800">{game.home_team}</span>
                                     <div className="flex flex-col items-center px-4">
                                         <span className="text-xs text-gray-500 mb-1">{game.stadium}</span>
                                         <span className="text-sm font-bold bg-gray-800 text-white px-3 py-1 rounded-full">vs</span>
                                     </div>
-                                    <span className="text-lg font-black text-gray-800">{game.awayTeam}</span>
+                                    <span className="text-lg font-black text-gray-800">{game.away_team}</span>
                                 </div>
                             </div>
 
@@ -95,18 +140,18 @@ export default function ReviewModal({
                                     <label className="block text-sm font-bold text-gray-700 flex items-center">
                                         <MapPin className="w-4 h-4 mr-1 text-gray-400" /> 관람 장소
                                     </label>
-                                    <select
-                                        value={location}
-                                        onChange={(e) => setLocation(e.target.value)}
-                                        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
-                                        required
-                                    >
-                                        <option value="" disabled>선택해주세요</option>
-                                        <option value="직관(홈석)">직관 (홈석)</option>
-                                        <option value="직관(원정석)">직관 (원정석)</option>
-                                        <option value="집관">집관</option>
-                                        <option value="펍/식당">펍/식당</option>
-                                    </select>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {['직관(홈)', '직관(원정)', '집관', '펍/식당'].map(loc => (
+                                            <button
+                                                key={loc}
+                                                type="button"
+                                                onClick={() => setLocation(loc)}
+                                                className={`py-2 text-sm font-bold rounded-xl border transition-colors ${location === loc ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                                            >
+                                                {loc}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
@@ -126,13 +171,14 @@ export default function ReviewModal({
 
                             {/* Comment */}
                             <div className="space-y-2">
-                                <label className="block text-sm font-bold text-gray-700">코멘트</label>
-                                <textarea
-                                    rows={4}
-                                    placeholder="오늘 경기의 주인공은 누구였나요? 가장 기억에 남는 순간을 남겨보세요!"
+                                <label className="block text-sm font-bold text-gray-700">한줄평</label>
+                                <input
+                                    type="text"
+                                    placeholder="오늘 경기의 주인공은 누구였나요?"
                                     value={comment}
                                     onChange={(e) => setComment(e.target.value)}
-                                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm resize-none placeholder-gray-400"
+                                    maxLength={100}
+                                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm placeholder-gray-400"
                                     required
                                 />
                             </div>
@@ -141,9 +187,9 @@ export default function ReviewModal({
                             <div className="pt-4 pb-8 sm:pb-0">
                                 <button
                                     type="submit"
-                                    disabled={rating === 0}
+                                    disabled={rating === 0 || !location || !comment.trim()}
                                     className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all
-                    ${rating === 0
+                    ${rating === 0 || !location || !comment.trim()
                                             ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                                             : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-blue-500/25'
                                         }`}
