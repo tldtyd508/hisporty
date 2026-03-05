@@ -8,14 +8,23 @@ export function createClient() {
 }
 
 export function getURL() {
+    // 1. If we're in the browser, window.location.origin is the most reliable.
+    if (typeof window !== 'undefined') {
+        return `${window.location.origin}/`
+    }
+
+    // 2. Fallback for server-side or non-browser environments.
     let url =
-        process.env.NEXT_PUBLIC_SITE_URL ?? // Set this to your site URL in production
-        process.env.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel
+        process.env.NEXT_PUBLIC_SITE_URL ??
+        process.env.NEXT_PUBLIC_VERCEL_URL ??
         'http://localhost:3000/'
-    // Make sure to include `https://` when not localhost.
+
+    // Ensure the protocol is present.
     url = url.includes('http') ? url : `https://${url}`
-    // Make sure to include a trailing `/`.
-    url = url.charAt(url.length - 1) === '/' ? url : `${url}/`
+    // Ensure trailing slash.
+    url = url.endsWith('/') ? url : `${url}/`
+
     return url
 }
+
 
