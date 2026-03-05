@@ -44,7 +44,45 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
 
     return (
         <div className="w-full max-w-md mx-auto px-4 pb-20">
-            <div className="flex justify-between items-center mb-4">
+            {/* Hero Section */}
+            {games.length > 0 && (
+                <div className="mb-10">
+                    <h2 className="text-lg font-bold text-gray-800 mb-3 px-1 tracking-tight">오늘의 매치업</h2>
+                    <div className="space-y-4">
+                        {games.map(game => (
+                            <div key={`hero-${game.id}`} className="bg-gradient-to-br from-blue-600 to-indigo-800 rounded-[2rem] p-8 text-white shadow-xl shadow-blue-900/10 relative overflow-hidden transition-transform hover:scale-[1.02]">
+                                {/* Decorative elements */}
+                                <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-black/20 rounded-full blur-2xl"></div>
+
+                                <div className="relative z-10 pt-2">
+                                    <div className="flex justify-center items-center mb-6">
+                                        <span className="bg-white/10 backdrop-blur-md text-blue-50 text-xs font-bold px-3 py-1 rounded-full border border-white/10 tracking-wider">
+                                            {game.stadium}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div className="text-center w-5/12">
+                                            <p className="text-4xl sm:text-5xl font-black tracking-tighter drop-shadow-md text-white">{game.home_team}</p>
+                                        </div>
+                                        <div className="w-2/12 flex justify-center">
+                                            <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
+                                                <span className="font-black text-xs text-white/90">VS</span>
+                                            </div>
+                                        </div>
+                                        <div className="text-center w-5/12">
+                                            <p className="text-4xl sm:text-5xl font-black tracking-tighter drop-shadow-md text-white/90">{game.away_team}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Feed Section */}
+            <div className="flex justify-between items-center mb-4 px-1">
                 <h3 className="text-xl font-bold font-sans text-gray-800">팬들의 소리</h3>
                 {games.length > 0 && (
                     <span className="text-sm font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
@@ -66,13 +104,27 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                     ) : (
                         reviews.map(review => {
                             const game = games.find(g => g.id === review.game_id);
+
+                            // Generate a consistent color based on user_id
+                            const colors = ['from-red-400 to-rose-500', 'from-orange-400 to-amber-500', 'from-green-400 to-emerald-500', 'from-teal-400 to-cyan-500', 'from-blue-400 to-indigo-500', 'from-violet-400 to-purple-500', 'from-fuchsia-400 to-pink-500'];
+                            let hash = 0;
+                            const idStr = review.user_id || review.user_nickname;
+                            for (let i = 0; i < idStr.length; i++) {
+                                hash = idStr.charCodeAt(i) + ((hash << 5) - hash);
+                            }
+                            const colorClass = colors[Math.abs(hash) % colors.length];
+
+                            // Display first character (except for "Guest-XXXX", we show "G")
+                            const isGuest = review.user_nickname.startsWith('Guest-');
+                            const initial = isGuest ? 'G' : review.user_nickname.charAt(0);
+
                             return (
                                 <div key={review.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                                     {/* Header: User Info & Rating */}
                                     <div className="flex items-center justify-between mb-4 border-b border-gray-50 pb-3">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-9 h-9 bg-gradient-to-tr from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm opacity-90">
-                                                {review.user_nickname.charAt(0)}
+                                            <div className={`w-9 h-9 bg-gradient-to-tr ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm opacity-90`}>
+                                                {initial}
                                             </div>
                                             <div>
                                                 <p className="text-sm font-bold text-gray-800 tracking-tight">{review.user_nickname}</p>

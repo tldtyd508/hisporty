@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from 'react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays } from 'date-fns';
+import { format, addDays, subDays, startOfWeek, endOfWeek, isSameMonth, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { createClient } from '@/app/utils/supabase/client';
 import { useEffect } from 'react';
 
 export default function Calendar({ onSelectDate, selectedDate }: { onSelectDate: (date: Date) => void, selectedDate: Date }) {
-    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [currentWeek, setCurrentWeek] = useState(selectedDate);
     const [games, setGames] = useState<any[]>([]);
     const supabase = createClient();
 
@@ -21,19 +21,19 @@ export default function Calendar({ onSelectDate, selectedDate }: { onSelectDate:
         fetchGames();
     }, [supabase]);
 
-    const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-    const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+    const nextWeek = () => setCurrentWeek(addDays(currentWeek, 7));
+    const prevWeek = () => setCurrentWeek(subDays(currentWeek, 7));
 
     const renderHeader = () => {
         return (
             <div className="flex justify-between items-center mb-4 px-2">
-                <button onClick={prevMonth} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
+                <button onClick={prevWeek} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
                     <ChevronLeft className="w-5 h-5 text-gray-700" />
                 </button>
                 <h2 className="text-lg font-bold text-gray-800">
-                    {format(currentMonth, 'yyyy년 MM월')}
+                    {format(currentWeek, 'yyyy년 MM월')}
                 </h2>
-                <button onClick={nextMonth} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
+                <button onClick={nextWeek} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
                     <ChevronRight className="w-5 h-5 text-gray-700" />
                 </button>
             </div>
@@ -54,54 +54,43 @@ export default function Calendar({ onSelectDate, selectedDate }: { onSelectDate:
     };
 
     const renderCells = () => {
-        const monthStart = startOfMonth(currentMonth);
-        const monthEnd = endOfMonth(monthStart);
-        const startDate = startOfWeek(monthStart);
-        const endDate = endOfWeek(monthEnd);
+        const startDate = startOfWeek(currentWeek);
+        const endDate = endOfWeek(currentWeek);
 
         const dateFormat = "d";
-        const rows = [];
-        let days = [];
+        const days = [];
         let day = startDate;
-        let formattedDate = "";
 
         while (day <= endDate) {
-            for (let i = 0; i < 7; i++) {
-                formattedDate = format(day, dateFormat);
-                const cloneDay = day;
+            const formattedDate = format(day, dateFormat);
+            const cloneDay = day;
 
-                // Check if there's a game on this day
-                const dayString = format(day, 'yyyy-MM-dd');
-                const hasGame = games.some(g => g.date === dayString);
+            // Check if there's a game on this day
+            const dayString = format(day, 'yyyy-MM-dd');
+            const hasGame = games.some(g => g.date === dayString);
 
-                days.push(
-                    <div
-                        className={`p-1 flex flex-col items-center justify-center cursor-pointer min-h-[50px]
-              ${!isSameMonth(day, monthStart) ? "text-gray-300 bg-gray-50" : "text-gray-800 bg-white"}
+            days.push(
+                <div
+                    className={`p-1 flex flex-col items-center justify-center cursor-pointer min-h-[50px]
+              ${isSameMonth(day, currentWeek) ? "text-gray-800 bg-white" : "text-gray-400 bg-gray-50"}
               ${isSameDay(day, selectedDate) ? "border-2 border-blue-500 rounded-lg shadow-sm" : "border border-gray-100 rounded-lg"}
               hover:bg-blue-50 transition-colors
             `}
-                        key={day.toISOString()}
-                        onClick={() => onSelectDate(cloneDay)}
-                    >
-                        <span className={`text-sm ${isSameDay(day, selectedDate) ? "font-bold text-blue-600" : ""}`}>
-                            {formattedDate}
-                        </span>
-                        {hasGame && (
-                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1"></div>
-                        )}
-                    </div>
-                );
-                day = addDays(day, 1);
-            }
-            rows.push(
-                <div className="grid grid-cols-7 gap-1 mb-1" key={day.toISOString()}>
-                    {days}
+                    key={day.toISOString()}
+                    onClick={() => onSelectDate(cloneDay)}
+                >
+                    <span className={`text-sm ${isSameDay(day, selectedDate) ? "font-bold text-blue-600" : ""}`}>
+                        {formattedDate}
+                    </span>
+                    {hasGame && (
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1"></div>
+                    )}
                 </div>
             );
-            days = [];
+            day = addDays(day, 1);
         }
-        return <div className="bg-gray-50 p-2 rounded-xl">{rows}</div>;
+
+        return <div className="bg-gray-50 p-2 rounded-xl grid grid-cols-7 gap-1">{days}</div>;
     };
 
     return (

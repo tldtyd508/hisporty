@@ -51,7 +51,7 @@ export default function ReviewModal({
             return;
         }
 
-        const nickname = user.user_metadata?.name || '익명 사용자';
+        const nickname = user.user_metadata?.name || (user.is_anonymous ? `Guest-${user.id.substring(0, 4).toUpperCase()}` : '익명 사용자');
 
         const { error } = await supabase.from('reviews').insert({
             user_id: user.id,
@@ -120,16 +120,21 @@ export default function ReviewModal({
                                 </label>
                                 <div className="flex justify-center space-x-2 p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     {[1, 2, 3, 4, 5].map((star) => (
-                                        <button
-                                            key={star}
-                                            type="button"
-                                            onClick={() => setRating(star)}
-                                            className="transition-transform hover:scale-110 active:scale-95 focus:outline-none"
-                                        >
+                                        <div key={star} className="relative w-10 h-10 transition-transform hover:scale-110 active:scale-95">
+                                            {/* Background / Full fill */}
                                             <Star
-                                                className={`w-10 h-10 ${star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-200'} transition-colors duration-200`}
+                                                className={`w-10 h-10 ${star <= Math.ceil(rating) ? 'text-yellow-400' : 'text-gray-200'} ${star <= rating ? 'fill-current' : ''} transition-colors duration-200`}
                                             />
-                                        </button>
+                                            {/* Half star fill overlay */}
+                                            {star === Math.ceil(rating) && rating % 1 !== 0 && (
+                                                <div className="absolute top-0 left-0 overflow-hidden" style={{ width: '50%' }}>
+                                                    <Star className="w-10 h-10 text-yellow-400 fill-current" />
+                                                </div>
+                                            )}
+                                            {/* Click areas */}
+                                            <button type="button" className="absolute top-0 left-0 w-1/2 h-full z-10" onClick={() => setRating(star - 0.5)} aria-label={`${star - 0.5}점`} />
+                                            <button type="button" className="absolute top-0 right-0 w-1/2 h-full z-10" onClick={() => setRating(star)} aria-label={`${star}점`} />
+                                        </div>
                                     ))}
                                 </div>
                             </div>
