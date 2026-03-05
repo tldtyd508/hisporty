@@ -1,16 +1,30 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Calendar from './components/Calendar';
 import ReviewFeed from './components/ReviewFeed';
 import ReviewModal from './components/ReviewModal';
 import AuthButton from './components/AuthButton';
 import Dashboard from './components/Dashboard';
-import { PenSquare, Trophy } from 'lucide-react';
+import { PenSquare, Trophy, Eye, EyeOff } from 'lucide-react';
 
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [spoilerShield, setSpoilerShield] = useState(true);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('hisporty_spoiler_shield');
+    if (saved !== null) setSpoilerShield(saved === 'true');
+  }, []);
+
+  const toggleSpoilerShield = () => {
+    setSpoilerShield(prev => {
+      const next = !prev;
+      localStorage.setItem('hisporty_spoiler_shield', String(next));
+      return next;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans sm:bg-gray-100 flex justify-center">
@@ -27,7 +41,17 @@ export default function Home() {
             <p className="text-xs font-medium text-gray-500 mt-1 ml-8 tracking-wide">나만의 스포츠 연대기</p>
           </div>
 
-          <AuthButton />
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={toggleSpoilerShield}
+              className={`flex items-center px-2.5 py-1.5 rounded-xl text-[10px] font-bold transition-all border ${spoilerShield ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-gray-50 text-gray-400 border-gray-100'}`}
+              title={spoilerShield ? '스포 방지 ON' : '스포 방지 OFF'}
+            >
+              {spoilerShield ? <EyeOff className="w-3.5 h-3.5 mr-1" /> : <Eye className="w-3.5 h-3.5 mr-1" />}
+              {spoilerShield ? '스포방지' : '결과공개'}
+            </button>
+            <AuthButton />
+          </div>
         </header>
 
         {/* Dashboard Section */}
@@ -45,7 +69,7 @@ export default function Home() {
 
         {/* Feed Section */}
         <section className="mt-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <ReviewFeed selectedDate={selectedDate} />
+          <ReviewFeed selectedDate={selectedDate} spoilerShield={spoilerShield} />
         </section>
 
         {/* Floating Action Button (FAB) */}

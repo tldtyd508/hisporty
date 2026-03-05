@@ -14,7 +14,7 @@ const TEAM_FLAGS: Record<string, string> = {
     '예선통과팀': '🏳️',
 };
 
-export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
+export default function ReviewFeed({ selectedDate, spoilerShield = true }: { selectedDate: Date; spoilerShield?: boolean }) {
     const dateString = format(selectedDate, 'yyyy-MM-dd');
     const [games, setGames] = useState<any[]>([]);
     const [reviews, setReviews] = useState<any[]>([]);
@@ -77,8 +77,8 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                 <div className="relative z-10 pt-2">
                                     <div className="flex justify-center items-center mb-6">
                                         <span className={`backdrop-blur-md text-xs font-bold px-3 py-1 rounded-full border tracking-wider ${game.status === '종료' ? 'bg-white/15 text-gray-200 border-white/10' :
-                                                game.status === '진행중' ? 'bg-red-500/30 text-red-100 border-red-400/30 animate-pulse' :
-                                                    'bg-white/10 text-blue-50 border-white/10'
+                                            game.status === '진행중' ? 'bg-red-500/30 text-red-100 border-red-400/30 animate-pulse' :
+                                                'bg-white/10 text-blue-50 border-white/10'
                                             }`}>
                                             {game.status === '종료' ? '경기 종료' : game.status === '진행중' ? '🔴 LIVE' : `${game.stadium} • ${game.time_kst || '시간 미정'}`}
                                         </span>
@@ -90,18 +90,7 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                         </div>
                                         <div className="w-2/12 flex flex-col items-center justify-center">
                                             {game.status === '종료' && game.home_score !== null ? (
-                                                revealedScores.has(game.id) ? (
-                                                    <div className="flex flex-col items-center">
-                                                        <div className="flex items-center space-x-1">
-                                                            <span className="text-3xl font-black">{game.home_score}</span>
-                                                            <span className="text-lg text-white/50 font-bold">:</span>
-                                                            <span className="text-3xl font-black">{game.away_score}</span>
-                                                        </div>
-                                                        <button onClick={() => toggleReveal(game.id)} className="mt-2 text-[10px] text-white/40 hover:text-white/60 flex items-center">
-                                                            <EyeOff className="w-3 h-3 mr-1" /> 숨기기
-                                                        </button>
-                                                    </div>
-                                                ) : (
+                                                spoilerShield && !revealedScores.has(game.id) ? (
                                                     <button
                                                         onClick={() => toggleReveal(game.id)}
                                                         className="flex flex-col items-center px-4 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl border border-white/10 transition-all active:scale-95"
@@ -109,6 +98,19 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                                         <Eye className="w-5 h-5 text-white/70 mb-1" />
                                                         <span className="text-[10px] font-bold text-white/60">결과 보기</span>
                                                     </button>
+                                                ) : (
+                                                    <div className="flex flex-col items-center">
+                                                        <div className="flex items-center space-x-1">
+                                                            <span className="text-3xl font-black">{game.home_score}</span>
+                                                            <span className="text-lg text-white/50 font-bold">:</span>
+                                                            <span className="text-3xl font-black">{game.away_score}</span>
+                                                        </div>
+                                                        {spoilerShield && (
+                                                            <button onClick={() => toggleReveal(game.id)} className="mt-2 text-[10px] text-white/40 hover:text-white/60 flex items-center">
+                                                                <EyeOff className="w-3 h-3 mr-1" /> 숨기기
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 )
                                             ) : (
                                                 <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
@@ -196,7 +198,7 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                         <div className="text-right">
                                             <div className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block mb-1">
                                                 {TEAM_FLAGS[game?.home_team] || ''} {game?.home_team}
-                                                {game?.status === '종료' && game?.home_score !== null ? ` ${game.home_score}:${game.away_score} ` : ' vs '}
+                                                {game?.status === '종료' && game?.home_score !== null && !spoilerShield ? ` ${game.home_score}:${game.away_score} ` : ' vs '}
                                                 {game?.away_team} {TEAM_FLAGS[game?.away_team] || ''}
                                             </div>
                                             <p className="text-[11px] text-gray-400">{format(new Date(review.created_at), 'yyyy-MM-dd')}</p>
@@ -204,9 +206,22 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                     </div>
 
                                     {/* Content: One-line review */}
-                                    <p className="text-gray-900 text-lg font-black mb-4 tracking-tight leading-snug">
-                                        "{review.comment}"
-                                    </p>
+                                    {spoilerShield && game?.status === '종료' ? (
+                                        <div className="relative mb-4">
+                                            <p className="text-gray-900 text-lg font-black tracking-tight leading-snug blur-md select-none" aria-hidden>
+                                                "{review.comment}"
+                                            </p>
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <span className="text-xs font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
+                                                    🔒 스포 방지 중
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-900 text-lg font-black mb-4 tracking-tight leading-snug">
+                                            "{review.comment}"
+                                        </p>
+                                    )}
 
                                     {/* Footer: Meta info */}
                                     <div className="flex items-center space-x-2 text-xs text-gray-500">
