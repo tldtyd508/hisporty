@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Star, MapPin, Users } from 'lucide-react';
+import { Star, MapPin, Users, Eye, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { createClient } from '@/app/utils/supabase/client';
 
@@ -19,7 +19,17 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
     const [games, setGames] = useState<any[]>([]);
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [revealedScores, setRevealedScores] = useState<Set<string>>(new Set());
     const supabase = createClient();
+
+    const toggleReveal = (gameId: string) => {
+        setRevealedScores(prev => {
+            const next = new Set(prev);
+            if (next.has(gameId)) next.delete(gameId);
+            else next.add(gameId);
+            return next;
+        });
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -59,15 +69,18 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                     <h2 className="text-lg font-bold text-gray-800 mb-3 px-1 tracking-tight">오늘의 매치업</h2>
                     <div className="space-y-4">
                         {games.map(game => (
-                            <div key={`hero-${game.id}`} className="bg-gradient-to-br from-blue-600 to-indigo-800 rounded-[2rem] p-8 text-white shadow-xl shadow-blue-900/10 relative overflow-hidden transition-transform hover:scale-[1.02]">
+                            <div key={`hero-${game.id}`} className={`rounded-[2rem] p-8 text-white shadow-xl shadow-blue-900/10 relative overflow-hidden transition-transform hover:scale-[1.02] ${game.status === '종료' ? 'bg-gradient-to-br from-gray-700 to-gray-900' : 'bg-gradient-to-br from-blue-600 to-indigo-800'}`}>
                                 {/* Decorative elements */}
                                 <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
                                 <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-black/20 rounded-full blur-2xl"></div>
 
                                 <div className="relative z-10 pt-2">
                                     <div className="flex justify-center items-center mb-6">
-                                        <span className="bg-white/10 backdrop-blur-md text-blue-50 text-xs font-bold px-3 py-1 rounded-full border border-white/10 tracking-wider">
-                                            {game.stadium} • {game.time_kst || '시간 미정'}
+                                        <span className={`backdrop-blur-md text-xs font-bold px-3 py-1 rounded-full border tracking-wider ${game.status === '종료' ? 'bg-white/15 text-gray-200 border-white/10' :
+                                                game.status === '진행중' ? 'bg-red-500/30 text-red-100 border-red-400/30 animate-pulse' :
+                                                    'bg-white/10 text-blue-50 border-white/10'
+                                            }`}>
+                                            {game.status === '종료' ? '경기 종료' : game.status === '진행중' ? '🔴 LIVE' : `${game.stadium} • ${game.time_kst || '시간 미정'}`}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center mb-4">
@@ -75,16 +88,44 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                             <div className="text-6xl sm:text-7xl mb-4 drop-shadow-lg">{TEAM_FLAGS[game.home_team] || '⚾️'}</div>
                                             <p className="text-xl sm:text-2xl font-black tracking-tight drop-shadow-md text-white/90">{game.home_team}</p>
                                         </div>
-                                        <div className="w-2/12 flex justify-center">
-                                            <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
-                                                <span className="font-black text-xs text-white/90">VS</span>
-                                            </div>
+                                        <div className="w-2/12 flex flex-col items-center justify-center">
+                                            {game.status === '종료' && game.home_score !== null ? (
+                                                revealedScores.has(game.id) ? (
+                                                    <div className="flex flex-col items-center">
+                                                        <div className="flex items-center space-x-1">
+                                                            <span className="text-3xl font-black">{game.home_score}</span>
+                                                            <span className="text-lg text-white/50 font-bold">:</span>
+                                                            <span className="text-3xl font-black">{game.away_score}</span>
+                                                        </div>
+                                                        <button onClick={() => toggleReveal(game.id)} className="mt-2 text-[10px] text-white/40 hover:text-white/60 flex items-center">
+                                                            <EyeOff className="w-3 h-3 mr-1" /> 숨기기
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => toggleReveal(game.id)}
+                                                        className="flex flex-col items-center px-4 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl border border-white/10 transition-all active:scale-95"
+                                                    >
+                                                        <Eye className="w-5 h-5 text-white/70 mb-1" />
+                                                        <span className="text-[10px] font-bold text-white/60">결과 보기</span>
+                                                    </button>
+                                                )
+                                            ) : (
+                                                <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
+                                                    <span className="font-black text-xs text-white/90">VS</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="text-center w-5/12">
                                             <div className="text-6xl sm:text-7xl mb-4 drop-shadow-lg">{TEAM_FLAGS[game.away_team] || '⚾️'}</div>
                                             <p className="text-xl sm:text-2xl font-black tracking-tight drop-shadow-md text-white/90">{game.away_team}</p>
                                         </div>
                                     </div>
+                                    {game.status !== '예정' && (
+                                        <div className="flex justify-center mt-2">
+                                            <span className="text-[10px] text-white/40 font-medium">{game.stadium} • {game.time_kst || ''}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -154,7 +195,9 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block mb-1">
-                                                {TEAM_FLAGS[game?.home_team] || ''} {game?.home_team} vs {game?.away_team} {TEAM_FLAGS[game?.away_team] || ''}
+                                                {TEAM_FLAGS[game?.home_team] || ''} {game?.home_team}
+                                                {game?.status === '종료' && game?.home_score !== null ? ` ${game.home_score}:${game.away_score} ` : ' vs '}
+                                                {game?.away_team} {TEAM_FLAGS[game?.away_team] || ''}
                                             </div>
                                             <p className="text-[11px] text-gray-400">{format(new Date(review.created_at), 'yyyy-MM-dd')}</p>
                                         </div>

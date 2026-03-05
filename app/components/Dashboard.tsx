@@ -8,6 +8,8 @@ import { Trophy, MessageCircle, Star, ArrowRight } from 'lucide-react';
 export default function Dashboard() {
     const [user, setUser] = useState<User | null>(null);
     const [reviewCount, setReviewCount] = useState<number>(0);
+    const [wins, setWins] = useState(0);
+    const [losses, setLosses] = useState(0);
     const [loading, setLoading] = useState(true);
     const supabase = createClient();
 
@@ -23,6 +25,7 @@ export default function Dashboard() {
                     .eq('user_id', session.user.id);
 
                 if (!error) setReviewCount(count || 0);
+                await fetchWinLoss(session.user.id);
             }
             setLoading(false);
         };
@@ -37,13 +40,58 @@ export default function Dashboard() {
                     .select('*', { count: 'exact', head: true })
                     .eq('user_id', session.user.id)
                     .then(({ count }) => setReviewCount(count || 0));
+                fetchWinLoss(session.user.id);
             } else {
                 setReviewCount(0);
+                setWins(0);
+                setLosses(0);
             }
         });
 
         return () => subscription.unsubscribe();
     }, [supabase]);
+
+    const fetchWinLoss = async (userId: string) => {
+        // Fetch user's reviews with their game data
+        const { data: userReviews } = await supabase
+            .from('reviews')
+            .select('supporting_team, game_id')
+            .eq('user_id', userId)
+            .not('supporting_team', 'is', null);
+
+        if (!userReviews || userReviews.length === 0) {
+            setWins(0);
+            setLosses(0);
+            return;
+        }
+
+        // Fetch finished games
+        const gameIds = [...new Set(userReviews.map(r => r.game_id))];
+        const { data: gamesData } = await supabase
+            .from('games')
+            .select('id, home_team, away_team, home_score, away_score, status')
+            .in('id', gameIds)
+            .eq('status', '종료');
+
+        if (!gamesData) return;
+
+        let w = 0, l = 0;
+        for (const review of userReviews) {
+            const game = gamesData.find(g => g.id === review.game_id);
+            if (!game || game.home_score === null) continue;
+
+            const supportedHome = review.supporting_team === game.home_team;
+            const homeWon = game.home_score > game.away_score;
+
+            if ((supportedHome && homeWon) || (!supportedHome && !homeWon)) {
+                w++;
+            } else {
+                l++;
+            }
+        }
+        setWins(w);
+        setLosses(l);
+    };
 
     const handleStartLogin = async () => {
         // Sign out first to clear the guest session
@@ -120,9 +168,15 @@ export default function Dashboard() {
                         </div>
                     </div>
                     <div className="text-right">
-                        <div className="inline-flex items-center px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black">
-                            {reviewCount > 0 ? '전적 분석 중' : '데이터 부족'}
-                        </div>
+                        {(wins + losses) > 0 ? (
+                            <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black ${wins >= losses ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                                승요 지수 {Math.round((wins / (wins + losses)) * 100)}%
+                            </div>
+                        ) : (
+                            <div className="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-500 rounded-full text-[10px] font-black">
+                                데이터 부족
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -142,7 +196,11 @@ export default function Dashboard() {
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 font-bold uppercase">통산 전적</p>
-                            <p className="text-sm font-black text-gray-400">데이터 수집 중</p>
+                            {(wins + losses) > 0 ? (
+                                <p className="text-xl font-black text-gray-900">{wins}승 {losses}패</p>
+                            ) : (
+                                <p className="text-sm font-black text-gray-400">데이터 수집 중</p>
+                            )}
                         </div>
                     </div>
                 </div>
