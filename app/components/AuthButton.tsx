@@ -38,8 +38,8 @@ export default function AuthButton() {
     const handleGuestLogin = async () => {
         const { error } = await supabase.auth.signInAnonymously();
         if (error) {
-            console.error('Guest login error:', error.message);
-            alert('게스트 로그인에 실패했습니다. 관리자에게 문의해주세요.');
+            console.error('Guest login error:', error.code, error.message);
+            alert(`게스트 로그인에 실패했습니다. (Error: ${error.message})\nSupabase 설정에서 Anonymous Auth가 활성화되어 있는지 확인해 주세요.`);
         }
     };
 

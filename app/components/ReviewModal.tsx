@@ -6,6 +6,15 @@ import { format } from 'date-fns';
 import { createClient } from '@/app/utils/supabase/client';
 import { useEffect } from 'react';
 
+const TEAM_FLAGS: Record<string, string> = {
+    '대한민국': '🇰🇷',
+    '일본': '🇯🇵',
+    '호주': '🇦🇺',
+    '체코': '🇨🇿',
+    '대만': '🇹🇼',
+    '예선통과팀': '🏳️',
+};
+
 export default function ReviewModal({
     isOpen,
     onClose,
@@ -104,12 +113,19 @@ export default function ReviewModal({
                                     {format(selectedDate, 'yyyy년 M월 d일')}
                                 </span>
                                 <div className="flex justify-between items-center mt-2">
-                                    <span className="text-lg font-black text-gray-800">{game.home_team}</span>
-                                    <div className="flex flex-col items-center px-4">
-                                        <span className="text-xs text-gray-500 mb-1">{game.stadium}</span>
-                                        <span className="text-sm font-bold bg-gray-800 text-white px-3 py-1 rounded-full">vs</span>
+                                    <div className="flex flex-col items-center w-5/12">
+                                        <span className="text-5xl mb-2 drop-shadow-sm">{TEAM_FLAGS[game.home_team] || '⚾️'}</span>
+                                        <span className="text-sm font-bold text-gray-900">{game.home_team}</span>
                                     </div>
-                                    <span className="text-lg font-black text-gray-800">{game.away_team}</span>
+                                    <div className="flex flex-col items-center px-4 w-2/12">
+                                        <span className="text-[10px] text-blue-600 font-bold mb-1 whitespace-nowrap">{game.time_kst || '시간 미정'}</span>
+                                        <span className="text-sm font-bold bg-gray-800 text-white px-3 py-1 rounded-full">vs</span>
+                                        <span className="text-[10px] text-gray-400 mt-1 whitespace-nowrap">{game.stadium}</span>
+                                    </div>
+                                    <div className="flex flex-col items-center w-5/12">
+                                        <span className="text-5xl mb-2 drop-shadow-sm">{TEAM_FLAGS[game.away_team] || '⚾️'}</span>
+                                        <span className="text-sm font-bold text-gray-900">{game.away_team}</span>
+                                    </div>
                                 </div>
                             </div>
 

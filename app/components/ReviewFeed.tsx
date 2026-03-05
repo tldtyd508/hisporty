@@ -5,6 +5,15 @@ import { Star, MapPin, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { createClient } from '@/app/utils/supabase/client';
 
+const TEAM_FLAGS: Record<string, string> = {
+    '대한민국': '🇰🇷',
+    '일본': '🇯🇵',
+    '호주': '🇦🇺',
+    '체코': '🇨🇿',
+    '대만': '🇹🇼',
+    '예선통과팀': '🏳️',
+};
+
 export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
     const dateString = format(selectedDate, 'yyyy-MM-dd');
     const [games, setGames] = useState<any[]>([]);
@@ -58,12 +67,13 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                 <div className="relative z-10 pt-2">
                                     <div className="flex justify-center items-center mb-6">
                                         <span className="bg-white/10 backdrop-blur-md text-blue-50 text-xs font-bold px-3 py-1 rounded-full border border-white/10 tracking-wider">
-                                            {game.stadium}
+                                            {game.stadium} • {game.time_kst || '시간 미정'}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center mb-4">
                                         <div className="text-center w-5/12">
-                                            <p className="text-4xl sm:text-5xl font-black tracking-tighter drop-shadow-md text-white">{game.home_team}</p>
+                                            <div className="text-6xl sm:text-7xl mb-4 drop-shadow-lg">{TEAM_FLAGS[game.home_team] || '⚾️'}</div>
+                                            <p className="text-xl sm:text-2xl font-black tracking-tight drop-shadow-md text-white/90">{game.home_team}</p>
                                         </div>
                                         <div className="w-2/12 flex justify-center">
                                             <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
@@ -71,7 +81,8 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                             </div>
                                         </div>
                                         <div className="text-center w-5/12">
-                                            <p className="text-4xl sm:text-5xl font-black tracking-tighter drop-shadow-md text-white/90">{game.away_team}</p>
+                                            <div className="text-6xl sm:text-7xl mb-4 drop-shadow-lg">{TEAM_FLAGS[game.away_team] || '⚾️'}</div>
+                                            <p className="text-xl sm:text-2xl font-black tracking-tight drop-shadow-md text-white/90">{game.away_team}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -136,7 +147,7 @@ export default function ReviewFeed({ selectedDate }: { selectedDate: Date }) {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block mb-1">
-                                                {game?.home_team} vs {game?.away_team}
+                                                {TEAM_FLAGS[game?.home_team] || ''} {game?.home_team} vs {game?.away_team} {TEAM_FLAGS[game?.away_team] || ''}
                                             </div>
                                             <p className="text-[11px] text-gray-400">{format(new Date(review.created_at), 'yyyy-MM-dd')}</p>
                                         </div>
