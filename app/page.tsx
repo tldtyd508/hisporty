@@ -7,16 +7,21 @@ import ReviewModal from './components/ReviewModal';
 import AuthButton from './components/AuthButton';
 import Dashboard from './components/Dashboard';
 import ComingSoon from './components/ComingSoon';
-import { PenSquare, Trophy, Eye, EyeOff } from 'lucide-react';
+import MyTeamSetting, { getMyTeams } from './components/MyTeamSetting';
+import { PenSquare, Trophy, Eye, EyeOff, Heart } from 'lucide-react';
 
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTeamSettingOpen, setIsTeamSettingOpen] = useState(false);
   const [spoilerShield, setSpoilerShield] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [myTeams, setMyTeams] = useState<string[]>(['대한민국']);
 
   useEffect(() => {
     const saved = localStorage.getItem('hisporty_spoiler_shield');
     if (saved !== null) setSpoilerShield(saved === 'true');
+    setMyTeams(getMyTeams());
   }, []);
 
   const toggleSpoilerShield = () => {
@@ -43,6 +48,15 @@ export default function Home() {
           </div>
 
           <div className="flex items-center space-x-2">
+            {/* My Team Setting Button */}
+            <button
+              onClick={() => setIsTeamSettingOpen(true)}
+              className="flex items-center px-2.5 py-1.5 rounded-xl text-[10px] font-bold transition-all border bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+              title="마이팀 설정"
+            >
+              <Heart className="w-3.5 h-3.5 mr-1 fill-current" />
+              마이팀
+            </button>
             <button
               onClick={toggleSpoilerShield}
               className={`flex items-center px-2.5 py-1.5 rounded-xl text-[10px] font-bold transition-all border ${spoilerShield ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-gray-50 text-gray-400 border-gray-100'}`}
@@ -75,7 +89,12 @@ export default function Home() {
 
         {/* Feed Section */}
         <section className="mt-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <ReviewFeed selectedDate={selectedDate} spoilerShield={spoilerShield} />
+          <ReviewFeed
+            selectedDate={selectedDate}
+            spoilerShield={spoilerShield}
+            refreshKey={refreshKey}
+            myTeams={myTeams}
+          />
         </section>
 
         {/* Floating Action Button (FAB) */}
@@ -91,6 +110,15 @@ export default function Home() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           selectedDate={selectedDate}
+          onReviewSubmitted={() => setRefreshKey(k => k + 1)}
+        />
+
+        {/* My Team Setting */}
+        <MyTeamSetting
+          isOpen={isTeamSettingOpen}
+          onClose={() => setIsTeamSettingOpen(false)}
+          onSave={setMyTeams}
+          currentTeams={myTeams}
         />
 
       </main>

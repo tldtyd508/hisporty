@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { format, addDays, subDays, startOfWeek, endOfWeek, isSameMonth, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { createClient } from '@/app/utils/supabase/client';
-import { useEffect } from 'react';
 
 export default function Calendar({ onSelectDate, selectedDate }: { onSelectDate: (date: Date) => void, selectedDate: Date }) {
     const [currentWeek, setCurrentWeek] = useState(selectedDate);
     const [games, setGames] = useState<any[]>([]);
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
 
     useEffect(() => {
         const fetchGames = async () => {

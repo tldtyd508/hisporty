@@ -72,7 +72,7 @@ export default function AuthButton() {
         });
 
         if (error) {
-            alert('닉네임 수 정에 실패했습니다: ' + error.message);
+            alert('닉네임 수정에 실패했습니다: ' + error.message);
         } else {
             setIsProfileModalOpen(false);
             // Local state will be updated via onAuthStateChange
@@ -135,7 +135,7 @@ export default function AuthButton() {
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
                         <div className="bg-white rounded-[2rem] w-full max-w-xs p-6 shadow-2xl animate-scale-in">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-black text-gray-900">프로필 수 정</h3>
+                                <h3 className="text-lg font-black text-gray-900">프로필 수정</h3>
                                 <button onClick={() => setIsProfileModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                                     <X className="w-5 h-5 text-gray-400" />
                                 </button>

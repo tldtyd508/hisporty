@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createClient, getURL } from '../utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { Trophy, MessageCircle, Star, ArrowRight } from 'lucide-react';
@@ -11,7 +11,7 @@ export default function Dashboard() {
     const [wins, setWins] = useState(0);
     const [losses, setLosses] = useState(0);
     const [loading, setLoading] = useState(true);
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
 
     useEffect(() => {
         const getSession = async () => {
