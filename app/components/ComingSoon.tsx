@@ -3,9 +3,7 @@
 import { Rocket, Camera, BarChart3, Trophy, Share2, MessageSquare, Repeat, Heart, ListChecks, Archive, Send } from 'lucide-react';
 
 const COMING_SOON_ITEMS = [
-    { icon: ListChecks, label: '경기 선택 리뷰', color: 'text-orange-500 bg-orange-50' },
     { icon: Repeat, label: '종목 전환', color: 'text-indigo-500 bg-indigo-50' },
-    { icon: Heart, label: '응원팀 설정', color: 'text-red-500 bg-red-50' },
     { icon: Archive, label: '명경기 아카이브', color: 'text-yellow-600 bg-yellow-50' },
     { icon: Send, label: '경기 추가 요청', color: 'text-teal-500 bg-teal-50' },
     { icon: Camera, label: '직관 사진 업로드', color: 'text-pink-500 bg-pink-50' },
