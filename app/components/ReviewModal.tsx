@@ -11,12 +11,14 @@ export default function ReviewModal({
     isOpen,
     onClose,
     selectedDate,
-    onReviewSubmitted
+    onReviewSubmitted,
+    preSelectedGameId
 }: {
     isOpen: boolean,
     onClose: () => void,
     selectedDate: Date,
-    onReviewSubmitted?: () => void
+    onReviewSubmitted?: () => void,
+    preSelectedGameId?: string | null
 }) {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState("");
@@ -40,8 +42,16 @@ export default function ReviewModal({
 
             if (data && data.length > 0) {
                 setGames(data);
-                // Auto-select if only one game
-                if (data.length === 1) {
+                
+                if (preSelectedGameId) {
+                    const match = data.find(g => g.id === preSelectedGameId);
+                    if (match) {
+                        setSelectedGame(match);
+                    } else {
+                        setSelectedGame(null);
+                    }
+                } else if (data.length === 1) {
+                    // Auto-select if only one game
                     setSelectedGame(data[0]);
                 } else {
                     setSelectedGame(null); // Force user to pick
@@ -56,7 +66,7 @@ export default function ReviewModal({
             setUser(userData.user);
         };
         init();
-    }, [isOpen, selectedDate, supabase]);
+    }, [isOpen, selectedDate, preSelectedGameId, supabase]);
 
     // Reset form when modal closes
     useEffect(() => {

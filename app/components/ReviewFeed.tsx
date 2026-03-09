@@ -14,13 +14,26 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
     { value: 'oldest', label: '오래된 순' },
 ];
 
-export default function ReviewFeed({ selectedDate, spoilerShield = true, refreshKey = 0, myTeams = ['대한민국'] }: { selectedDate: Date; spoilerShield?: boolean; refreshKey?: number; myTeams?: string[] }) {
+export default function ReviewFeed({ 
+    selectedDate, 
+    spoilerShield = true, 
+    refreshKey = 0, 
+    myTeams = ['대한민국'],
+    selectedGameId,
+    onSelectGame
+}: { 
+    selectedDate: Date; 
+    spoilerShield?: boolean; 
+    refreshKey?: number; 
+    myTeams?: string[];
+    selectedGameId: string | null;
+    onSelectGame: (id: string | null) => void;
+}) {
     const dateString = format(selectedDate, 'yyyy-MM-dd');
     const [games, setGames] = useState<any[]>([]);
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [revealedScores, setRevealedScores] = useState<Set<string>>(new Set());
-    const [selectedGameId, setSelectedGameId] = useState<string | null>(null); // null = 전체
     const [sortMode, setSortMode] = useState<SortMode>('latest');
     const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
     const [likedByMe, setLikedByMe] = useState<Set<string>>(new Set());
@@ -61,8 +74,9 @@ export default function ReviewFeed({ selectedDate, spoilerShield = true, refresh
 
             if (gamesData && gamesData.length > 0) {
                 setGames(gamesData);
-                // Reset game filter when games change
-                setSelectedGameId(null);
+                // We no longer reset game filter internally when games change, 
+                // parent should handle it or it'll refer to old ID.
+                onSelectGame(null);
 
                 const gameIds = gamesData.map(g => g.id);
                 const { data: reviewsData } = await supabase
@@ -222,7 +236,7 @@ export default function ReviewFeed({ selectedDate, spoilerShield = true, refresh
                                     onClick={(e) => {
                                         // Don't toggle when clicking score reveal buttons
                                         if ((e.target as HTMLElement).closest('button')) return;
-                                        setSelectedGameId(prev => prev === game.id ? null : game.id);
+                                        onSelectGame(selectedGameId === game.id ? null : game.id);
                                     }}
                                     className={`rounded-[2rem] p-8 text-white shadow-xl relative overflow-hidden transition-all cursor-pointer hover:scale-[1.01] ${isSelected ? 'ring-4 ring-yellow-400 ring-offset-2 scale-[1.01]' : ''
                                         } ${isMy
@@ -339,7 +353,7 @@ export default function ReviewFeed({ selectedDate, spoilerShield = true, refresh
                                 {TEAM_FLAGS[game.home_team] || ''} {game.home_team} vs {game.away_team} {TEAM_FLAGS[game.away_team] || ''} 리뷰만
                             </span>
                             <button
-                                onClick={() => setSelectedGameId(null)}
+                                onClick={() => onSelectGame(null)}
                                 className="text-xs font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded-full transition-colors"
                             >
                                 ✕ 전체 보기
