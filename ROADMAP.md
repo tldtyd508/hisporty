@@ -20,6 +20,17 @@
 - 프로필에서 **내 응원팀**을 사전 설정 (예: KBO → 두산, K리그 → 전북)
 - 리뷰 작성 시 자동 선택 / 경기 필터링 / 맞춤 알림 기반으로 활용
 
+- [ ] 전인구경제연구소(유튜브 밈), 부동산 흐름 지표 등은 수동 or 크롤링 모듈 필요 
+
+### 4. Hisporty (WBC 라이브 데이터 자동화)
+- **현재 상황**: 대회 기간 중 매일 경기 결과를 수동으로 스크립트(`scripts/update_scores.js`)를 통해 DB에 업데이트 중.
+- **자동화 도입 방안**:
+  - [ ] **데이터 소스(API) 확보**: MLB Stats API, Flashscore 비공개 API 또는 Sportradar 등 스포츠 데이터 제공 API 활용. API가 마땅치 않을 경우 WBC 공식 홈페이지 크롤러(Cheerio/Puppeteer) 구축.
+  - [ ] **자동화 파이프라인(Cron Job) 구현**: 
+    - Next.js의 Route Handler(예: `app/api/cron/update-wbc-scores/route.ts`)를 생성하여 업데이트 로직 구현.
+    - Vercel Pro 플랜이므로 `vercel.json`의 `crons`를 활용해 대회 기간 동안 자유롭게 스케줄링 가능 (최대 1분 단위 지원). 예: `/api/cron/update-wbc-scores`를 30분마다 자동 실행.
+  - [ ] **데이터 파싱 및 DB 업데이트**: 외부 API 데이터와 DB(`public.games`) 매핑 기준(팀명, 날짜)을 확립하고, status가 '예정'이거나 '진행중'인 경기만 갱신. `home_score`, `away_score`, `status`('종료') 자동 반영.
+
 ## 🚀 기능 개발 예정
 - **⚾ 경기 선택 리뷰** — 하루 여러 경기 중 리뷰할 경기를 직접 선택 (KBO 시즌 5경기/일 대비)
 - **📸 직관 사진 업로드** — 리뷰에 인증샷 첨부

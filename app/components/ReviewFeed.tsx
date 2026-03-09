@@ -432,20 +432,45 @@ export default function ReviewFeed({ selectedDate, spoilerShield = true, refresh
                                     </div>
 
                                     {/* Content: One-line review */}
-                                    {spoilerShield && game?.status === '종료' ? (
-                                        <div className="relative mb-4">
-                                            <p className="text-gray-900 text-lg font-black tracking-tight leading-snug blur-md select-none" aria-hidden>
+                                    {spoilerShield && game?.status === '종료' && !revealedScores.has(review.id) ? (
+                                        <div 
+                                            className="relative mb-4 cursor-pointer group"
+                                            onClick={() => {
+                                                setRevealedScores(prev => {
+                                                    const next = new Set(prev);
+                                                    next.add(review.id);
+                                                    return next;
+                                                });
+                                            }}
+                                            title="클릭해서 리뷰 보기"
+                                        >
+                                            <p className="text-gray-900 text-lg font-black tracking-tight leading-snug blur-md select-none opacity-40 group-hover:opacity-60 transition-opacity" aria-hidden>
                                                 &ldquo;{review.comment}&rdquo;
                                             </p>
                                             <div className="absolute inset-0 flex items-center justify-center">
-                                                <span className="text-xs font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
-                                                    🔒 스포 방지 중
+                                                <span className="text-xs font-bold text-gray-500 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-gray-200 group-hover:bg-white group-hover:text-blue-600 group-hover:border-blue-200 transition-all flex items-center">
+                                                    <Eye className="w-4 h-4 mr-1.5" /> 스포 방지 중 (클릭해서 보기)
                                                 </span>
                                             </div>
                                         </div>
                                     ) : (
                                         <p className="text-gray-900 text-lg font-black mb-4 tracking-tight leading-snug">
                                             &ldquo;{review.comment}&rdquo;
+                                            {spoilerShield && game?.status === '종료' && revealedScores.has(review.id) && (
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setRevealedScores(prev => {
+                                                            const next = new Set(prev);
+                                                            next.delete(review.id);
+                                                            return next;
+                                                        });
+                                                    }}
+                                                    className="block mt-2 text-[10px] text-gray-400 hover:text-gray-600 flex items-center"
+                                                >
+                                                    <EyeOff className="w-3 h-3 mr-1" /> 다시 숨기기
+                                                </button>
+                                            )}
                                         </p>
                                     )}
 
